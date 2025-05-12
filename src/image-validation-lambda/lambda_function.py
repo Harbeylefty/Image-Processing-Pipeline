@@ -1,3 +1,4 @@
+
 # src/image-validation-lambda/app.py
 import json
 import os
