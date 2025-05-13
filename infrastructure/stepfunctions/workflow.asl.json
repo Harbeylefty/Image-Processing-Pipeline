@@ -51,9 +51,65 @@
         {
           "ErrorEquals": ["States.ALL"],
           "Next": "NotifyFailureState",
-          "Comment": "HandlesStoreResultsinDynamoDBFailure"
+          "Comment": "Handles StoreResultsinDynamoDB Failure"
         }
       ]
+    },
+    "NotifySuccessState": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:us-east-1:038462762530:ImageProcessingNotifications",
+        "Message": {
+          "status": "SUCCESS",
+          "detail": "Image processing completed successfully",
+          "imageId.$": "$.s3_key",
+          "processedData.$": "$"
+        },
+        "MessageStructure": "json",
+        "MessageAttributes": {
+          "processing_status": {
+            "DataType": "String",
+            "StringValue": "SUCCESS"
+          },
+          "imageId": {
+            "DataType": "String",
+            "StringValue.$": "$.s3_key"
+          }
+        }
+      },
+      "Comment": "Notify successful completion via SNS",
+      "End": true
+    },
+    "NotifyFailureState": {
+      "Type": "Task",
+      "Resource":  "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:us-east-1:038462762530:ImageProcessingNotifications",
+        "Message": {
+          "status": "FAILURE",
+          "detail": "Image Processing Failed",
+          "errorInfo": {
+            "Error.$": "$.Error",
+            "Cause.$": "$.Cause"
+          }
+        },
+        "MessageStructure": "json",
+        "MessageAttributes": {
+          "processing_status": {
+            "DataType": "String",
+            "StringValue": "FAILURE"
+          }
+        }
+      },
+      "Comment": "Notify Failure Via SNS",
+      "Next": "WorkFlowFailedState"
+    },
+    "WorkFlowFailedState": {
+      "Type": "Fail",
+      "Comment": "Explicitly mark the workflow as failed after sending failure notification",
+      "Error": "ImageProcessingPipelineError",
+      "Cause": "The image processing workflow encountered an error. See execution logs and SNS failure notification for details."
     }
   }
 }
