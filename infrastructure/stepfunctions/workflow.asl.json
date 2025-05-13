@@ -4,7 +4,7 @@
   "Version": "1.0",
   "States": {
     "ImageValidationState": {
-      "Type": "Task", 
+      "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:038462762530:function:ImageValidationFunction",
       "Comment": "Invoke the Image Validation Lambda function",
       "Next": "GenerateThumbnailsState",
@@ -43,7 +43,7 @@
       ]
     },
     "StoreResultinDynamoDBState": {
-      "Type": "Task", 
+      "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:038462762530:function:StoreResultsInDynamoDBFunction",
       "Comment": "Invoke the StoreResults lambda function",
       "Next": "NotifySuccessState",
@@ -60,11 +60,10 @@
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
         "TopicArn": "arn:aws:sns:us-east-1:038462762530:ImageProcessingNotifications",
-        "Message": {
-          "status": "SUCCESS",
-          "detail": "Image processing completed successfully",
-          "imageId.$": "$.s3_key",
-          "processedData.$": "$"
+        "Subject": "SUCCESS: Image Processing Complete", 
+        "MessageStructure": "json", 
+        "Message": {      
+          "default.$": "States.Format('Image processing for S3 object [{}] completed successfully. Overall status: {}.', $.s3_key, $.overall_processing_status)"
         },
         "MessageAttributes": {
           "processing_status": {
@@ -85,20 +84,16 @@
       "Resource":  "arn:aws:states:::sns:publish",
       "Parameters": {
         "TopicArn": "arn:aws:sns:us-east-1:038462762530:ImageProcessingNotifications",
-        "Message": { 
-          "status": "FAILURE",
-          "detail": "Image Processing Failed",
-          "errorInfo": {
-            "Error.$": "$.Error",
-            "Cause.$": "$.Cause"
-          }
+        "Subject": "FAILURE: Image Processing Error", 
+        "MessageStructure": "json", 
+        "Message": {
+          "default.$": "States.Format('Image Processing FAILED. Error Type: {}. Cause: {}', $.Error, $.Cause)"
         },
-   
         "MessageAttributes": {
           "processing_status": {
             "DataType": "String",
             "StringValue": "FAILURE"
-          }
+          }         
         }
       },
       "Comment": "Notify Failure Via SNS",
@@ -107,7 +102,7 @@
     "WorkFlowFailedState": {
       "Type": "Fail",
       "Comment": "Explicitly mark the workflow as failed after sending failure notification",
-      "Error": "ImageProcessingPipelineError", 
+      "Error": "ImageProcessingPipelineError",
       "Cause": "The image processing workflow encountered an error. See execution logs and SNS failure notification for details."
     }
   }
