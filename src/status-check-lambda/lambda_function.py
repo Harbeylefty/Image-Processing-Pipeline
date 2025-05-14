@@ -74,9 +74,8 @@ def lambda_handler(event, context):
         table = dynamodb_resource.Table(DYNAMODB_TABLE_NAME)
         
         # Query DynamoDB for the item using the imageId
-        # Ensure your DynamoDB table's partition key is named 'imageId'
         response_ddb = table.get_item(
-            Key={'imageId': image_id_to_query} 
+            Key={'ImageKey': image_id_to_query} 
         )
 
         if 'Item' in response_ddb:
@@ -121,16 +120,16 @@ def lambda_handler(event, context):
         }
 
 # --- Example Test Event for AWS Lambda Console (simulating API Gateway proxy event) ---
-# {
-#   "pathParameters": {
-#     "imageId": "uploads/grafana-dashboard-english.png" 
-#     // REPLACE with an imageId that EXISTS in your DynamoDB table for a successful test
-#     // OR use an imageId that DOES NOT EXIST to test the 404 path
-#   },
-#   "httpMethod": "GET", // Illustrative, this Lambda doesn't use it but API Gateway sends it
-#   "requestContext": { // Illustrative, provides context about the request
-#       "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-#       "stage": "prod"
-#   }
-#   // API Gateway sends many other fields, but pathParameters.imageId is the one this Lambda uses.
-# }
+# # {
+# #   "pathParameters": {
+# #     "imageId": "uploads/grafana-dashboard-english.png" 
+# #     // REPLACE with an imageId that EXISTS in your DynamoDB table for a successful test
+# #     // OR use an imageId that DOES NOT EXIST to test the 404 path
+# #   },
+# #   "httpMethod": "GET", // Illustrative, this Lambda doesn't use it but API Gateway sends it
+# #   "requestContext": { // Illustrative, provides context about the request
+# #       "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+# #       "stage": "prod"
+# #   }
+# #   // API Gateway sends many other fields, but pathParameters.imageId is the one this Lambda uses.
+# # }
