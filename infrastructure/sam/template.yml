@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >- 
+  SAM Template for the Event-Driven Image Processing pieline 
+  This pipeline Validates Images, generates thumbnails, extracts metadata, 
+  Store results in DynamoDB, also includes an API Endpoint for processing status. 
+
+Resources:
+  UploadsBucket:
+    Type: AWS::S3::Bucket 
+    Properties: 
+      BucketName: image-processing-bucket-2025 
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+  
+
+  ThumbnailsBucket:
+    Type: AWS::S3::Bucket 
+    Properties:
+      BucketName: thumbnails-bucket-us-east-1-2025
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true 
+        RestrictPublicBuckets: true
