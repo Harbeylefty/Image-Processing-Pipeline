@@ -25,3 +25,132 @@ Resources:
         BlockPublicPolicy: true 
         IgnorePublicAcls: true
         RestrictPublicBuckets: true 
+  
+  ImageProcessingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ImageProcessingDb 
+      AttributeDefinitions:
+        - AttributeName: ImageKey 
+          AttributeType: S 
+      KeySchema:
+        - AttributeName: ImageKey 
+          KeyType: HASH 
+      BillingMode: PAY_PER_REQUEST
+  
+  ImageProcessingSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: ImageProcessingNotifications
+  
+  EmailNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties: 
+      TopicArn: !Ref ImageProcessingSNSTopic
+      Protocol: email
+      Endpoint: Harbeysegun@gmail.com
+  
+  ImageProcessingLambdaRole: 
+    Type: AWS::IAM::Role 
+    Properties:
+      RoleName: ImageProcessingLambdaRole 
+      AssumeRolePolicyDocument: 
+        Version: '2012-10-17'
+        Statement: 
+          - Effect: Allow 
+            Principal: 
+              Service: lambda.amazonaws.com 
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole  #For lambda logging to cloudwatch
+      Policies:
+        - PolicyName: LambdaImageProcessingPolicy
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              # Statement 1: Allow reading from the uploads Bucket 
+              - Sid: S3ReadFromUploadsFolder
+                Effect: Allow 
+                Action: s3:GetObject
+                Resource: !Sub 'arn:aws:s3:::${UploadsBucket}/uploads/*'  
+            
+              #Statement 2: Allow write to the thumbnails s3 bucket 
+              - Sid: S3WriteToThumbnailsFolder
+                Effect: Allow 
+                Action: s3:PutObject 
+                Resource: !Sub 'arn:aws:s3:::${ThumbNailsBucket}/thumbnails/*'
+            
+              #Statement 3: Allow Read and write to DynamoDB Table 
+              - Sid: DynamoDBTableAccess 
+                Effect: Allow 
+                Action: 
+                  - dynamodb:PutItem 
+                  - dynamodb:GetItem
+                Resource: !GetAtt ImageProcessingDynamoDBTable.Arn
+              
+              # Rekognition Access 
+              - Sid: RekognitionAccess
+                Effect: Allow 
+                Action: rekognition:DetectLabels
+                Resource: "*" # For detect labels resource is usually * 
+   
+  ImageProcessingStepFunctionRole:
+    Type: AWS::IAM::Role 
+    Properties: 
+      RoleName: ImageProcessingStepFunctionsRole 
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement: 
+          - Effect: Allow 
+            Principal: 
+              Service: !Sub 'states.${AWS::Region}.amazonaws.com'
+            Action: sts:AssumeRole 
+      Policies:
+        - PolicyName: StepFunctionImageProcessingPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement: 
+              # Allow for invoking of lambda functions 
+              - Sid: InvokeLambdaFunctions
+                Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: 
+                  - !GetAtt ImageValidationLambda.Arn 
+                  - !GetAtt GenerateThumbnailsLambda.Arn
+                  - !GetAtt ExtractMetadataLambda.Arn
+                  - !GetAtt StoreResultsLambda.Arn 
+
+              - Sid: PublishToSnsTopic
+                Effect: Allow 
+                Action: sns:Publish
+                Resource: !Ref ImageProcessingSNSTopic
+              
+              - Sid: AllowStepFunctionToWriteItsexecutionLogs 
+                Effect: Allow 
+                Action: 
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: "*"
+               
+              - Sid: AllowStepFunctionsToPassLambdaExecutionRole
+                Effect: Allow
+                Action: iam:PassRole 
+                Resource: !GetAtt ImageProcessingLambdaRole.Arn 
+                Condition: 
+                  StringEquals:
+                    iam:PassedToService: lambda.amazonaws.com 
+              - Sid: XrayAccessForTracing
+                Effect: Allow 
+                Action: 
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                Resource: "*"
+              
