@@ -1,3 +1,4 @@
+
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31 
 Description: >- 
@@ -15,6 +16,9 @@ Resources:
         BlockPublicPolicy: true 
         IgnorePublicAcls: true
         RestrictPublicBuckets: true 
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true  # This tells S3 to send events to EventBridge
 
   ThumbNailsBucket:
     Type: AWS::S3::Bucket 
@@ -240,6 +244,12 @@ Resources:
       Environment:
         Variables:
           DYNAMODB_TABLE_NAME: !Ref ImageProcessingDynamoDBTable
+      Events:
+        StatusCheckApi:
+          Type: HttpApi # Tells SAM to create an AWS API Gateway HTTP API endpoint
+          Properties:
+            Path: /images/uploads/{filename}/status
+            Method: GET
   
   ImageProcessingStateMachine:
     Type: AWS::Serverless::StateMachine
@@ -253,20 +263,41 @@ Resources:
         StoreResultsLambdaArn: !GetAtt StoreResultsLambda.Arn 
         ImageProcessingSNSTopicArn: !Ref ImageProcessingSNSTopic
       Role: !GetAtt ImageProcessingStepFunctionRole.Arn
-      Events: 
+      Events:
         S3UploadTrigger:
-          Type: S3 
-          Properties: # Defines the events that will trigger the state machine
-            Bucket: !Ref UploadsBucket
-            Events: s3:ObjectCreated:*  # Trigger on all object creation events
-            Filter:
-              S3Key:
-                Rules:
-                  - Name: prefix
-                    Value: uploads/ # Only trigger for objects in the 'uploads/' prefix
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: default 
+            InputPath: $.detail   # This will pass the S3 event details to your Step Function
+            Pattern:
+              source:
+                - aws.s3
+              detail-type:
+                - "Object Created" # Using quotes for consistency
+              detail:
+                bucket:
+                  name:
+                    - !Ref UploadsBucket
+                object:
+                  key: 
+                    - prefix: uploads/
       Logging:
         Level: ALL
         IncludeExecutionData: true
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt StateMachineLogGroup.Arn
       Tracing:  # EnableAWS X-ray tracing
         Enabled: True       
-        
+
+# Create Log group where logs from statemachine should go to 
+  StateMachineLogGroup: 
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7 
+
+
+# Outputs:
+#   ImageStatusApiEndpoint:
+#     Description: "API Gateway endpoint URL for checking image status"
+#     Value: !Sub "https:// ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
