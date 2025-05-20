@@ -1,137 +1,135 @@
-
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31 
-Description: >- 
-  SAM Template for the Event-Driven Image-Processing Pipeline
-  This Pipeline validates images, generates thumbnails, extracts metadata,
-  store results in DynamoDB, and also includes an API Endpoint for processing status
+Transform: AWS::Serverless-2016-10-31
+Description: SAM Template for the Event-Driven Image-Processing Pipeline This
+  Pipeline validates images, generates thumbnails, extracts metadata, store
+  results in DynamoDB, and also includes an API Endpoint for processing status
 
 Resources:
   UploadsBucket:
-    Type: AWS::S3::Bucket  #This tells CloudFormation to create s3 Bucket. 
+    Type: AWS::S3::Bucket #This tells CloudFormation to create s3 Bucket. 
     Properties:
       BucketName: image-uploads-bucket-us-east-1-2025
-      PublicAccessBlockConfiguration: 
-        BlockPublicAcls: true 
-        BlockPublicPolicy: true 
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
         IgnorePublicAcls: true
-        RestrictPublicBuckets: true 
+        RestrictPublicBuckets: true
       NotificationConfiguration:
         EventBridgeConfiguration:
-          EventBridgeEnabled: true  # This tells S3 to send events to EventBridge
+          EventBridgeEnabled: true # This tells S3 to send events to EventBridge
 
   ThumbNailsBucket:
-    Type: AWS::S3::Bucket 
+    Type: AWS::S3::Bucket
     Properties:
       BucketName: thumbnails-bucket-us-east-1-2025
-      PublicAccessBlockConfiguration: 
-        BlockPublicAcls: true 
-        BlockPublicPolicy: true 
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
         IgnorePublicAcls: true
-        RestrictPublicBuckets: true 
-  
+        RestrictPublicBuckets: true
+
   ImageProcessingDynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ImageProcessingDb 
+      TableName: ImageProcessingDb
       AttributeDefinitions:
-        - AttributeName: ImageKey 
-          AttributeType: S 
+        - AttributeName: ImageKey
+          AttributeType: S
       KeySchema:
-        - AttributeName: ImageKey 
-          KeyType: HASH 
+        - AttributeName: ImageKey
+          KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-  
+
   ImageProcessingSNSTopic:
     Type: AWS::SNS::Topic
-    Properties: 
+    Properties:
       TopicName: ImageProcessingNotifications
-  
+
   EmailNotificationSubscription:
     Type: AWS::SNS::Subscription
-    Properties: 
+    Properties:
       TopicArn: !Ref ImageProcessingSNSTopic
       Protocol: email
       Endpoint: Harbeysegun@gmail.com
-  
-  ImageProcessingLambdaRole: 
-    Type: AWS::IAM::Role 
+
+  ImageProcessingLambdaRole:
+    Type: AWS::IAM::Role
     Properties:
-      RoleName: ImageProcessingLambdaRole 
-      AssumeRolePolicyDocument: 
-        Version: '2012-10-17'
-        Statement: 
-          - Effect: Allow 
-            Principal: 
-              Service: lambda.amazonaws.com 
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole  #For lambda logging to cloudwatch
-      Policies:
-        - PolicyName: LambdaImageProcessingPolicy
-          PolicyDocument: 
-            Version: '2012-10-17'
-            Statement: 
-              # Statement 1: Allow reading from the uploads Bucket 
-              - Sid: S3ReadFromUploadsFolder
-                Effect: Allow 
-                Action: s3:GetObject
-                Resource: !Sub 'arn:aws:s3:::${UploadsBucket}/uploads/*'  
-            
-              #Statement 2: Allow write to the thumbnails s3 bucket 
-              - Sid: S3WriteToThumbnailsFolder
-                Effect: Allow 
-                Action: s3:PutObject 
-                Resource: !Sub 'arn:aws:s3:::${ThumbNailsBucket}/thumbnails/*'
-            
-              #Statement 3: Allow Read and write to DynamoDB Table 
-              - Sid: DynamoDBTableAccess 
-                Effect: Allow 
-                Action: 
-                  - dynamodb:PutItem 
-                  - dynamodb:GetItem
-                Resource: !GetAtt ImageProcessingDynamoDBTable.Arn
-              
-              # Rekognition Access 
-              - Sid: RekognitionAccess
-                Effect: Allow 
-                Action: rekognition:DetectLabels
-                Resource: "*" # For detect labels resource is usually * 
-   
-  ImageProcessingStepFunctionRole:
-    Type: AWS::IAM::Role 
-    Properties: 
-      RoleName: ImageProcessingStepFunctionsRole 
+      RoleName: ImageProcessingLambdaRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
-        Statement: 
-          - Effect: Allow 
-            Principal: 
-              Service: !Sub 'states.${AWS::Region}.amazonaws.com'
-            Action: sts:AssumeRole 
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole #For lambda logging to cloudwatch
+      Policies:
+        - PolicyName: LambdaImageProcessingPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # Statement 1: Allow reading from the uploads Bucket 
+              - Sid: S3ReadFromUploadsFolder
+                Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub arn:aws:s3:::${UploadsBucket}/uploads/*
+
+              #Statement 2: Allow write to the thumbnails s3 bucket 
+              - Sid: S3WriteToThumbnailsFolder
+                Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub arn:aws:s3:::${ThumbNailsBucket}/thumbnails/*
+
+              #Statement 3: Allow Read and write to DynamoDB Table 
+              - Sid: DynamoDBTableAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                Resource: !GetAtt ImageProcessingDynamoDBTable.Arn
+
+              # Rekognition Access 
+              - Sid: RekognitionAccess
+                Effect: Allow
+                Action: rekognition:DetectLabels
+                Resource: '*' # For detect labels resource is usually * 
+
+  ImageProcessingStepFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ImageProcessingStepFunctionsRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub states.${AWS::Region}.amazonaws.com
+            Action: sts:AssumeRole
       Policies:
         - PolicyName: StepFunctionImageProcessingPolicy
           PolicyDocument:
             Version: '2012-10-17'
-            Statement: 
+            Statement:
               # Allow for invoking of lambda functions 
               - Sid: InvokeLambdaFunctions
                 Effect: Allow
                 Action: lambda:InvokeFunction
-                Resource: 
-                  - !GetAtt ImageValidationLambda.Arn 
+                Resource:
+                  - !GetAtt ImageValidationLambda.Arn
                   - !GetAtt GenerateThumbnailsLambda.Arn
                   - !GetAtt ExtractMetadataLambda.Arn
-                  - !GetAtt StoreResultsLambda.Arn 
+                  - !GetAtt StoreResultsLambda.Arn
 
               - Sid: PublishToSnsTopic
-                Effect: Allow 
+                Effect: Allow
                 Action: sns:Publish
                 Resource: !Ref ImageProcessingSNSTopic
-              
-              - Sid: AllowStepFunctionToWriteItsexecutionLogs 
-                Effect: Allow 
-                Action: 
+
+              - Sid: AllowStepFunctionToWriteItsexecutionLogs
+                Effect: Allow
+                Action:
                   - logs:CreateLogDelivery
                   - logs:GetLogDelivery
                   - logs:UpdateLogDelivery
@@ -140,77 +138,77 @@ Resources:
                   - logs:PutResourcePolicy
                   - logs:DescribeResourcePolicies
                   - logs:DescribeLogGroups
-                Resource: "*"
-               
+                Resource: '*'
+
               - Sid: AllowStepFunctionsToPassLambdaExecutionRole
                 Effect: Allow
-                Action: iam:PassRole 
-                Resource: !GetAtt ImageProcessingLambdaRole.Arn 
-                Condition: 
+                Action: iam:PassRole
+                Resource: !GetAtt ImageProcessingLambdaRole.Arn
+                Condition:
                   StringEquals:
-                    iam:PassedToService: lambda.amazonaws.com 
+                    iam:PassedToService: lambda.amazonaws.com
               - Sid: XrayAccessForTracing
-                Effect: Allow 
-                Action: 
+                Effect: Allow
+                Action:
                   - xray:PutTraceSegments
                   - xray:PutTelemetryRecords
                   - xray:GetSamplingRules
                   - xray:GetSamplingTargets
-                Resource: "*"
+                Resource: '*'
 
-  ImageValidationLambda: 
+  ImageValidationLambda:
     Type: AWS::Serverless::Function
-    Properties: 
+    Properties:
       FunctionName: ImageValidationFunction
       Description: Lambda Function to validate Image format
-      Runtime: python3.12
-      Architectures: 
-        - x86_64
-      Handler: lambda_function.lambda_handler
-      Role: !GetAtt ImageProcessingLambdaRole.Arn
-      Timeout: 10
-      MemorySize: 128 
-      CodeUri: ../../src/image-validation-lambda/
-  
-  GenerateThumbnailsLambda: 
-    Type: AWS::Serverless::Function 
-    Properties: 
-      FunctionName: GenerateThumbnailsFunction
-      Description: Generates thumbnails for images uploaded 
       Runtime: python3.12
       Architectures:
         - x86_64
       Handler: lambda_function.lambda_handler
       Role: !GetAtt ImageProcessingLambdaRole.Arn
-      Timeout: 20 
+      Timeout: 10
+      MemorySize: 128
+      CodeUri: ../../src/image-validation-lambda/
+
+  GenerateThumbnailsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GenerateThumbnailsFunction
+      Description: Generates thumbnails for images uploaded
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt ImageProcessingLambdaRole.Arn
+      Timeout: 20
       MemorySize: 256
       CodeUri: ../../src/generate-thumbnails-lambda/
       Environment:
-        Variables: 
+        Variables:
           THUMBNAILS_S3_BUCKET: !Ref ThumbNailsBucket
-          THUMBNAIL_SIZES: "100x100,640x480"
-      Layers: 
+          THUMBNAIL_SIZES: 100x100,640x480
+      Layers:
         - arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:6
-  
+
   ExtractMetadataLambda:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ExtractMetadataFunction
-      Description: Extracts metadata of images uploaded 
+      Description: Extracts metadata of images uploaded
       Runtime: python3.12
-      Architectures: 
+      Architectures:
         - x86_64
       Handler: lambda_function.lambda_handler
       Role: !GetAtt ImageProcessingLambdaRole.Arn
       Timeout: 20
       MemorySize: 256
       CodeUri: ../../src/extract-metadata-lambda/
-      Environment: 
+      Environment:
         Variables:
-          USE_REKOGNITION: "true"
+          USE_REKOGNITION: 'true'
       Layers:
         - arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:6
-  
+
   StoreResultsLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -221,13 +219,13 @@ Resources:
         - x86_64
       Handler: lambda_function.lambda_handler
       Role: !GetAtt ImageProcessingLambdaRole.Arn
-      Timeout: 10 
+      Timeout: 10
       MemorySize: 128
       CodeUri: ../../src/store-results-lambda/
-      Environment: 
-        Variables: 
+      Environment:
+        Variables:
           DYNAMODB_TABLE_NAME: !Ref ImageProcessingDynamoDBTable
-  
+
   StatusCheckLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -235,7 +233,7 @@ Resources:
       Description: Check Status of uploaded image through API Gateway
       Runtime: python3.12
       Architectures:
-        - x86_64 
+        - x86_64
       Handler: lambda_function.lambda_handler
       Role: !GetAtt ImageProcessingLambdaRole.Arn
       Timeout: 10
@@ -250,36 +248,35 @@ Resources:
           Properties:
             Path: /images/uploads/{filename}/status
             Method: GET
-  
+
   ImageProcessingStateMachine:
     Type: AWS::Serverless::StateMachine
     Properties:
       Name: ImageProcessingWorkflow
-      DefinitionUri: ../stepfunctions/workflow.asl.json
       DefinitionSubstitutions:
         ImageValidationLambdaArn: !GetAtt ImageValidationLambda.Arn
         GenerateThumbnailsLambdaArn: !GetAtt GenerateThumbnailsLambda.Arn
         ExtractMetadataLambdaArn: !GetAtt ExtractMetadataLambda.Arn
-        StoreResultsLambdaArn: !GetAtt StoreResultsLambda.Arn 
+        StoreResultsLambdaArn: !GetAtt StoreResultsLambda.Arn
         ImageProcessingSNSTopicArn: !Ref ImageProcessingSNSTopic
       Role: !GetAtt ImageProcessingStepFunctionRole.Arn
       Events:
         S3UploadTrigger:
           Type: EventBridgeRule
           Properties:
-            EventBusName: default 
-            InputPath: $.detail   # This will pass the S3 event details to your Step Function
+            EventBusName: default
+            InputPath: $.detail # This will pass the S3 event details to your Step Function
             Pattern:
               source:
                 - aws.s3
               detail-type:
-                - "Object Created" # Using quotes for consistency
+                - Object Created # Using quotes for consistency
               detail:
                 bucket:
                   name:
                     - !Ref UploadsBucket
                 object:
-                  key: 
+                  key:
                     - prefix: uploads/
       Logging:
         Level: ALL
@@ -287,15 +284,16 @@ Resources:
         Destinations:
           - CloudWatchLogsLogGroup:
               LogGroupArn: !GetAtt StateMachineLogGroup.Arn
-      Tracing:  # EnableAWS X-ray tracing
-        Enabled: True       
+      Tracing:
+        # EnableAWS X-ray tracing
+        Enabled: true
+      DefinitionUri: ../stepfunctions/workflow.asl.json
 
-# Create Log group where logs from statemachine should go to 
-  StateMachineLogGroup: 
+  # Create Log group where logs from statemachine should go to 
+  StateMachineLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 7 
-
+      RetentionInDays: 7
 
 # Outputs:
 #   ImageStatusApiEndpoint:
