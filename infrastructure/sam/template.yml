@@ -153,4 +153,120 @@ Resources:
                   - xray:GetSamplingRules
                   - xray:GetSamplingTargets
                 Resource: "*"
-              
+
+  ImageValidationLambda: 
+    Type: AWS::Serverless::Function
+    Properties: 
+      FunctionName: ImageValidationFunction
+      Description: Lambda Function to validate Image format
+      Runtime: python3.12
+      Architectures: 
+        - x86_64
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt ImageProcessingLambdaRole.Arn
+      Timeout: 10
+      MemorySize: 128 
+      CodeUri: ../../src/image-validation-lambda/
+  
+  GenerateThumbnailsLambda: 
+    Type: AWS::Serverless::Function 
+    Properties: 
+      FunctionName: GenerateThumbnailsFunction
+      Description: Generates thumbnails for images uploaded 
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt ImageProcessingLambdaRole.Arn
+      Timeout: 20 
+      MemorySize: 256
+      CodeUri: ../../src/generate-thumbnails-lambda/
+      Environment:
+        Variables: 
+          THUMBNAILS_S3_BUCKET: !Ref ThumbNailsBucket
+          THUMBNAIL_SIZES: "100x100,640x480"
+      Layers: 
+        - arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:6
+  
+  ExtractMetadataLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ExtractMetadataFunction
+      Description: Extracts metadata of images uploaded 
+      Runtime: python3.12
+      Architectures: 
+        - x86_64
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt ImageProcessingLambdaRole.Arn
+      Timeout: 20
+      MemorySize: 256
+      CodeUri: ../../src/extract-metadata-lambda/
+      Environment: 
+        Variables:
+          USE_REKOGNITION: "true"
+      Layers:
+        - arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p312-Pillow:6
+  
+  StoreResultsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: StoreResultsinDynamoDBFunction
+      Description: Store results of extracted metadata in DynamoDB
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt ImageProcessingLambdaRole.Arn
+      Timeout: 10 
+      MemorySize: 128
+      CodeUri: ../../src/store-results-lambda/
+      Environment: 
+        Variables: 
+          DYNAMODB_TABLE_NAME: !Ref ImageProcessingDynamoDBTable
+  
+  StatusCheckLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: StatusCheckFunction
+      Description: Check Status of uploaded image through API Gateway
+      Runtime: python3.12
+      Architectures:
+        - x86_64 
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt ImageProcessingLambdaRole.Arn
+      Timeout: 10
+      MemorySize: 128
+      CodeUri: ../../src/status-check-lambda
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !Ref ImageProcessingDynamoDBTable
+  
+  ImageProcessingStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: ImageProcessingWorkflow
+      DefinitionUri: ../stepfunctions/workflow.asl.json
+      DefinitionSubstitutions:
+        ImageValidationLambdaArn: !GetAtt ImageValidationLambda.Arn
+        GenerateThumbnailsLambdaArn: !GetAtt GenerateThumbnailsLambda.Arn
+        ExtractMetadataLambdaArn: !GetAtt ExtractMetadataLambda.Arn
+        StoreResultsLambdaArn: !GetAtt StoreResultsLambda.Arn 
+        ImageProcessingSNSTopicArn: !Ref ImageProcessingSNSTopic
+      Role: !GetAtt ImageProcessingStepFunctionRole.Arn
+      Events: 
+        S3UploadTrigger:
+          Type: S3 
+          Properties: # Defines the events that will trigger the state machine
+            Bucket: !Ref UploadsBucket
+            Events: s3:ObjectCreated:*  # Trigger on all object creation events
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: uploads/ # Only trigger for objects in the 'uploads/' prefix
+      Logging:
+        Level: ALL
+        IncludeExecutionData: true
+      Tracing:  # EnableAWS X-ray tracing
+        Enabled: True       
+        

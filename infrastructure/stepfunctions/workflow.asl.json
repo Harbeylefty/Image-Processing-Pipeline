@@ -5,7 +5,7 @@
   "States": {
     "ImageValidationState": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:038462762530:function:ImageValidationFunction",
+      "Resource": "${ImageValidationLambdaArn}",
       "Comment": "Invoke the Image Validation Lambda function",
       "Next": "GenerateThumbnailsState",
       "Catch": [
@@ -18,7 +18,7 @@
     },
     "GenerateThumbnailsState": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:038462762530:function:GenerateThumbnailsFunction",
+      "Resource": "${GenerateThumbnailsLambdaArn}",
       "Comment": "Invoke the Generate thumbnails lambda function",
       "Next": "ExtractMetadataState",
       "Catch": [
@@ -31,7 +31,7 @@
     },
     "ExtractMetadataState": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:038462762530:function:ExtractMetadataFunction",
+      "Resource": "${ExtractMetadataLambdaArn}",
       "Comment": "Invoke the ExtractMetadata lambda function",
       "Next": "StoreResultinDynamoDBState",
       "Catch": [
@@ -44,7 +44,7 @@
     },
     "StoreResultinDynamoDBState": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:038462762530:function:StoreResultsInDynamoDBFunction",
+      "Resource": "${StoreResultsLambdaArn}",
       "Comment": "Invoke the StoreResults lambda function",
       "Next": "NotifySuccessState",
       "Catch": [
@@ -59,7 +59,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
-        "TopicArn": "arn:aws:sns:us-east-1:038462762530:ImageProcessingNotifications",
+        "TopicArn": "${ImageProcessingSNSTopicArn}",
         "Subject": "SUCCESS: Image Processing Complete", 
         "MessageStructure": "json", 
         "Message": {      
@@ -83,7 +83,7 @@
       "Type": "Task",
       "Resource":  "arn:aws:states:::sns:publish",
       "Parameters": {
-        "TopicArn": "arn:aws:sns:us-east-1:038462762530:ImageProcessingNotifications",
+        "TopicArn": "${ImageProcessingSNSTopicArn}",
         "Subject": "FAILURE: Image Processing Error", 
         "MessageStructure": "json", 
         "Message": {
