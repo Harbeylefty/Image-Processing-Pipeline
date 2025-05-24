@@ -161,5 +161,4 @@ To remove all AWS resources created by this SAM application and avoid ongoing ch
 
 
 
-License
 This project is licensed under the MIT License.
