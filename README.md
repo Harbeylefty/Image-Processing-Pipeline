@@ -80,8 +80,8 @@ To deploy and run this project, you will need:
 
 1.  **Clone the repository:**
     ```bash
-    git clone <Your GitHub Repo URL>
-    cd image-processing-pipeline # Or your project's root directory name
+    git clone https://github.com/Harbeylefty/Image-Processing-Project.git
+    cd image-processing-pipeline 
     ```
 2.  **Navigate to the SAM application directory:**
     ```bash
@@ -95,22 +95,21 @@ To deploy and run this project, you will need:
 4.  **Deploy the SAM application:**
     The first time you deploy, use the `--guided` flag to specify deployment parameters.
     ```bash
-    sam deploy --guided --capabilities CAPABILITY_NAMED_IAM
+    sam deploy --guided
     ```
     You will be prompted for:
-    * **Stack Name:** Choose a name for your CloudFormation stack (e.g., `ImageProcessingPipeline-Dev`). This needs to be unique in your AWS account and region for new stacks.
-    * **AWS Region:** Your desired AWS region (e.g., `us-east-1`).
+    * **Stack Name:** Choose a name for your CloudFormation stack (e.g., `ImageProcessingPipeline`). This needs to be unique in your AWS account and region for new stacks.
+    * **AWS Region:** Your desired AWS region.
     * **Confirm changes before deploy:** Enter `Y` to review changes.
     * **Allow SAM CLI IAM role creation:** Enter `Y`.
     * **Disable rollback:** Enter `N` (allows CloudFormation to roll back to the previous stable state if the deployment fails).
     * **Save arguments to configuration file `samconfig.toml`?:** Enter `Y`.
-    * Accept defaults for other prompts unless you have specific needs.
-    * *Note on S3 Bucket Names:* The S3 bucket names (`image-uploads-bucket-us-east-1-20251`, `thumbnails-bucket-us-east-1-20251`) are defined in `template.yaml`. They must be globally unique. If you encounter an error that a bucket already exists during deployment, you will need to modify these names in `template.yaml` to something unique and then re-run `sam build` and `sam deploy`.
+    * Accept defaults for other prompts
 
 5.  **SNS Email Subscription Confirmation:**
-    After the stack is successfully deployed, an email will be sent from AWS Notifications to the address specified in `template.yaml` (e.g., `Harbeysegun@gmail.com`) for the SNS subscription. **You MUST click the confirmation link in this email** to activate the subscription and start receiving notifications from the `ImageProcessingNotifications` topic.
+    After the stack is successfully deployed, an email will be sent from AWS Notifications to the address specified in `template.yml` for the SNS subscription. **You MUST click the confirmation link in this email** to activate the subscription and start receiving notifications from the `ImageProcessingNotifications` topic.
 
-For subsequent deployments after making changes to your template or Lambda code, you can often just run `sam deploy --capabilities CAPABILITY_NAMED_IAM` (or `sam deploy` if capabilities are saved in `samconfig.toml`) from the `infrastructure/sam/` directory.
+For subsequent deployments after making changes to your template or Lambda code, you can often just run `sam deploy`
 
 ## Usage & Testing the Pipeline
 
