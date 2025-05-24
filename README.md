@@ -11,17 +11,17 @@ This project serves as a practical example of building robust, automated, and sc
 ## Features
 
 * **Event-Driven Architecture:** Processing is automatically triggered by image uploads to Amazon S3.
-* **Serverless Compute:** All processing logic is handled by AWS Lambda functions (Python 3.12).
+* **Serverless Compute:** All processing logic is handled by AWS Lambda functions
 * **Workflow Orchestration:** AWS Step Functions manages the multi-step processing workflow, including error handling, state transitions, and notifications.
-* **Image Validation:** Validates uploaded files against supported image formats (e.g., JPG, PNG).
+* **Image Validation:** Validates uploaded files against supported image formats (JPG, PNG, JPEG).
 * **Automated Thumbnail Generation:** Creates multiple thumbnail sizes (e.g., 100x100, 640x480) using the Pillow library (via Lambda Layer).
 * **Comprehensive Metadata Extraction:**
     * Basic image properties (dimensions, format, filesize, color mode) via Pillow (via Lambda Layer).
     * Content-based labels and confidence scores using Amazon Rekognition.
 * **Persistent Metadata Storage:** Stores original image references, thumbnail S3 locations, and all extracted metadata in an Amazon DynamoDB table.
-* **Notifications:** Uses Amazon SNS to send human-readable notifications (e.g., to an email address) upon successful completion or failure of the processing workflow, using a single topic with message attributes to differentiate status.
+* **Notifications:** Uses Amazon SNS to send human-readable notifications (to an email address) upon successful completion or failure of the processing workflow, using a single topic with message attributes to differentiate status.
 * **API for Status Check:** An HTTP API endpoint built with Amazon API Gateway allows querying the processing status and metadata of any image by its filename.
-* **Infrastructure as Code (IaC):** The entire cloud infrastructure is defined in an AWS SAM template (`template.yaml`) for automated, repeatable deployments.
+* **Infrastructure as Code (IaC):** The entire cloud infrastructure is defined in an AWS SAM template (`template.yml`)
 
 ## Architecture
 
@@ -45,8 +45,8 @@ A separate Amazon API Gateway HTTP API endpoint (`GET /images/uploads/{filename}
 ## Technologies & AWS Services Used
 
 * **Core AWS Services:**
-    * Amazon S3 (Simple Storage Service)
-    * AWS Lambda (Python 3.12)
+    * Amazon S3
+    * AWS Lambda 
     * AWS Step Functions
     * Amazon DynamoDB
     * Amazon SNS (Simple Notification Service)
@@ -57,13 +57,13 @@ A separate Amazon API Gateway HTTP API endpoint (`GET /images/uploads/{filename}
     * Amazon CloudWatch (Logs & Metrics)
 * **Infrastructure as Code:**
     * AWS SAM (Serverless Application Model)
-    * AWS CloudFormation (underlying SAM)
+
 * **Programming Language & Key Libraries (Lambda):**
-    * Python 3.12
+    * Python
     * Pillow (for image manipulation, provided via Klayers Lambda Layer)
     * Boto3 (AWS SDK for Python)
 * **Development & Testing Tools:**
-    * Git & GitHub (or other version control)
+    * Git & GitHub 
     * Docker (for `sam build --use-container`)
     * Postman (or `curl`, for API testing)
 
@@ -71,11 +71,10 @@ A separate Amazon API Gateway HTTP API endpoint (`GET /images/uploads/{filename}
 
 To deploy and run this project, you will need:
 * An AWS Account.
-* AWS CLI installed and configured with necessary permissions and a default region.
+* AWS CLI installed and configured with necessary permissions
 * AWS SAM CLI installed.
 * Docker installed and running (required for `sam build --use-container`).
-* Python 3.12 (for reference, though SAM builds in a container).
-* Git (to clone the repository).
+
 
 ## Deployment with AWS SAM
 
