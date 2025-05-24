@@ -115,7 +115,7 @@ For subsequent deployments after making changes to your template or Lambda code,
 
 ### Triggering the Pipeline
 1.  Navigate to the AWS S3 console.
-2.  Go to the S3 bucket created by SAM for uploads (e.g., `image-uploads-bucket-us-east-1-20251`).
+2.  Go to the S3 bucket created by SAM for uploads.
 3.  Upload a valid image file (e.g., a `.jpg` or `.png`) **into the `uploads/` prefix (folder)**. You can do this by:
     * Using the "Create folder" button in the S3 console to create an `uploads` folder, then navigating into it and clicking "Upload".
     * Or, during the upload process, ensuring the destination "Key" for your image is `uploads/your-image-name.jpg`.
@@ -149,7 +149,7 @@ To remove all AWS resources created by this SAM application and avoid ongoing ch
     ```bash
     sam delete --stack-name <YourStackName> 
     ```
-    (Replace `<YourStackName>` with the name you gave your stack, e.g., `ImageProcessingPipeline-Dev`). Confirm the deletion when prompted. Alternatively, you can delete the stack directly from the AWS CloudFormation console.
+     Confirm the deletion when prompted. Alternatively, you can delete the stack directly from the AWS CloudFormation console.
 
 ## (Optional) Future Enhancements
 * Implement a CI/CD pipeline (e.g., using AWS CodePipeline or GitHub Actions) for automated builds and deployments.
@@ -159,10 +159,7 @@ To remove all AWS resources created by this SAM application and avoid ongoing ch
 * Add more image processing features (e.g., watermarking, format conversion to WebP, image optimization).
 * Develop a simple web front-end to upload images and view status/results using the API.
 
-## (Optional) Author
-* Your Name
-* [Your GitHub Profile URL (Optional)](<Your GitHub Profile URL>)
-* [Your LinkedIn Profile URL (Optional)](<Your LinkedIn Profile URL>)
 
-## (Optional) License
-* e.g., This project is licensed under the MIT License.
+
+License
+This project is licensed under the MIT License.
