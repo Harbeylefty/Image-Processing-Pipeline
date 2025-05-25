@@ -37,7 +37,7 @@ Upon successful completion or any failure during these steps, the Step Function 
 
 A separate Amazon API Gateway HTTP API endpoint (`GET /images/uploads/{filename}/status`) invokes a `StatusCheckLambda` to query the DynamoDB table and return the status and details of a processed image.
 
-![Image Processing Pipeline Architecture](./assets/architecture1.png)
+![Image Processing Pipeline Architecture](./assets/architecture.png)
 
 ## Technologies & AWS Services Used
 
