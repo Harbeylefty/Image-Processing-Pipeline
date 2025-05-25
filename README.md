@@ -37,10 +37,7 @@ Upon successful completion or any failure during these steps, the Step Function 
 
 A separate Amazon API Gateway HTTP API endpoint (`GET /images/uploads/{filename}/status`) invokes a `StatusCheckLambda` to query the DynamoDB table and return the status and details of a processed image.
 
-**[Placeholder for Architectural Diagram]**
-*Create your diagram using Eraser.io (or another tool) and embed the image here. For example:*
-`![Image Processing Pipeline Architecture](./assets/architecture1.png)`
-*(You might need to create an `images` folder in your repo for the diagram).*
+![Image Processing Pipeline Architecture](./assets/architecture1.png)
 
 ## Technologies & AWS Services Used
 
