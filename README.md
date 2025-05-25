@@ -135,7 +135,7 @@ For subsequent deployments after making changes to your template or Lambda code,
     Replace `<InvokeURL>` with your actual API invoke URL and `{filename}` with the name of an image file (e.g., `Kubernetes2.png`) that has been processed.
     Example using `curl`:
     ```bash
-    curl https://<your-api-id>.execute-api.<your-region>[.amazonaws.com/images/uploads/Kubernetes2.png/status](https://.amazonaws.com/images/uploads/Kubernetes2.png/status)
+    curl https://<your-api-id>.execute-api.<your-region>.amazonaws.com/images/uploads/Kubernetes2.png/status
     ```
 3.  **Expected Response:**
     * **200 OK:** With a JSON body containing the image's processing details from DynamoDB.
@@ -150,15 +150,6 @@ To remove all AWS resources created by this SAM application and avoid ongoing ch
     sam delete --stack-name <YourStackName> 
     ```
      Confirm the deletion when prompted. Alternatively, you can delete the stack directly from the AWS CloudFormation console.
-
-## (Optional) Future Enhancements
-* Implement a CI/CD pipeline (e.g., using AWS CodePipeline or GitHub Actions) for automated builds and deployments.
-* Add more sophisticated error handling, such as Dead Letter Queues (DLQs) for Lambda functions.
-* Use AWS SAM template parameters for configurable settings like environment names or bucket name suffixes.
-* Implement security enhancements for the API Gateway endpoint (e.g., authentication, authorization).
-* Add more image processing features (e.g., watermarking, format conversion to WebP, image optimization).
-* Develop a simple web front-end to upload images and view status/results using the API.
-
 
 
 This project is licensed under the MIT License.
