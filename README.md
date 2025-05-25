@@ -91,8 +91,8 @@ image-processing-pipeline/
 │       └── lambda_function.py    
 ├── .gitignore              
 ├── LICENSE                   
-└── README.md                   
-   
+└── README.md   
+```   
 
 ## Prerequisites
 
