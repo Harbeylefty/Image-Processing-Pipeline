@@ -39,7 +39,7 @@ A separate Amazon API Gateway HTTP API endpoint (`GET /images/uploads/{filename}
 
 **[Placeholder for Architectural Diagram]**
 *Create your diagram using Eraser.io (or another tool) and embed the image here. For example:*
-`![Image Processing Pipeline Architecture](assets/architecture1.png)`
+`![Image Processing Pipeline Architecture](./assets/architecture1.png)`
 *(You might need to create an `images` folder in your repo for the diagram).*
 
 ## Technologies & AWS Services Used
