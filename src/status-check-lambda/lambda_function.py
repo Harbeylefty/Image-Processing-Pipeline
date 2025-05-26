@@ -59,16 +59,13 @@ def lambda_handler(event, context):
             filename_from_path = filename_from_path[1:]
             
         image_id_to_query = f"uploads/{filename_from_path}"
-        # Note: S3 keys (and thus imageId_to_query) are case-sensitive.
-        # No need to urllib.parse.unquote_plus here as 'filename' shouldn't contain encoded slashes.
 
         print(f"Constructed imageId for query: '{image_id_to_query}'. Attempting to retrieve from table '{DYNAMODB_TABLE_NAME}'")
         
         table = dynamodb_resource.Table(DYNAMODB_TABLE_NAME)
         
         # Query DynamoDB for the item using the constructed imageId.
-        # Ensure your DynamoDB table's partition key is named 'ImageKey' (or 'imageId' if you changed it).
-        # We'll assume it's 'ImageKey' based on previous successful DynamoDB write.
+        # Ensure your DynamoDB table's partition key is named 'ImageKey'
         response_ddb = table.get_item(
             Key={'ImageKey': image_id_to_query} 
         )
@@ -112,7 +109,7 @@ def lambda_handler(event, context):
             'body': json.dumps(response_body)
         }
 
-# --- Example Test Event for AWS Lambda Console ---
+# Example Test Event for AWS Lambda Console
 # Simulating API Gateway proxy event for the path /images/uploads/{filename}/status
 # {
 #   "pathParameters": {
@@ -121,9 +118,9 @@ def lambda_handler(event, context):
 #     // matches an ImageKey that EXISTS in your DynamoDB table for a successful test.
 #     // OR use a filename that DOES NOT EXIST (after prepending "uploads/") to test the 404 path.
 #   },
-#   "httpMethod": "GET", // Illustrative
+#   "httpMethod": "GET", //
 #   "requestContext": { 
 #       "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-#       "stage": "prod" // Or your actual stage name like "$default"
+#       "stage": "$default"
 #   }
 # }

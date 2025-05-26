@@ -17,20 +17,19 @@ class DecimalEncoder(json.JSONEncoder):
             if o == float('-inf'): return '-Infinity'
             # Otherwise, convert float to Decimal via string for precision
             return decimal.Decimal(str(o))
-        if isinstance(o, int): # Optionally convert top-level integers if your schema needs it
+        if isinstance(o, int): 
             return decimal.Decimal(o)
         if isinstance(o, decimal.Decimal):
              # Handle NaN, Infinity, -Infinity for Decimals already
-            if o.is_nan(): return 'NaN' # Represent as string "NaN"
+            if o.is_nan(): return 'NaN' 
             if o.is_infinite():
-                return 'Infinity' if o > 0 else '-Infinity' # Represent as string "Infinity"
+                return 'Infinity' if o > 0 else '-Infinity'
         return super(DecimalEncoder, self).default(o)
 
 dynamodb_resource = boto3.resource('dynamodb')
 DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME')
 
 if not DYNAMODB_TABLE_NAME:
-    # This print is for deployment-time check; handler has a stricter check.
     print("CRITICAL WARNING: DYNAMODB_TABLE_NAME environment variable not set at global scope!")
 
 def lambda_handler(event, context):
@@ -74,7 +73,7 @@ def lambda_handler(event, context):
         item_json_string_with_decimals = json.dumps(item_to_store, cls=DecimalEncoder)
         item_cleaned_for_dynamodb = json.loads(item_json_string_with_decimals, parse_float=decimal.Decimal, parse_int=decimal.Decimal)
 
-        print(f"Attempting to store item in DynamoDB: {json.dumps(item_cleaned_for_dynamodb, default=str)}") # Use default=str for logging Decimals
+        print(f"Attempting to store item in DynamoDB: {json.dumps(item_cleaned_for_dynamodb, default=str)}")
         
         table.put_item(Item=item_cleaned_for_dynamodb)
         
@@ -95,106 +94,9 @@ def lambda_handler(event, context):
         print(f"Problematic event data for DynamoDB: {json.dumps(event, default=str)}") 
         raise
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # src/store-results-lambda/app.py
-# import json
-# import os
-# import boto3
-# import time
-# import decimal # To handle float to Decimal conversion for DynamoDB
-# import urllib.parse
-
-# # Helper class to convert floats to Decimals for DynamoDB
-# class DecimalEncoder(json.JSONEncoder):
-#     def default(self, o):
-#         if isinstance(o, float):
-#             # Ensure finite values for Decimal conversion
-#             if o != o or o == float('inf') or o == float('-inf'):
-#                  return str(o) # Convert NaN/inf to string or handle as error
-#             return decimal.Decimal(str(o))
-#         return super(DecimalEncoder, self).default(o)
-
-# dynamodb_resource = boto3.resource('dynamodb')
-# DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME')
-
-# if not DYNAMODB_TABLE_NAME:
-#     print("Error: DYNAMODB_TABLE_NAME environment variable not set!")
-
-# def lambda_handler(event, context):
-#     print(f"Received event for DynamoDB storage: {json.dumps(event)}")
-
-#     if not DYNAMODB_TABLE_NAME:
-#         raise EnvironmentError("DYNAMODB_TABLE_NAME environment variable is not configured.")
-
-#     try:
-#         table = dynamodb_resource.Table(DYNAMODB_TABLE_NAME)
-
-#         # Assuming the primary key for DynamoDB is 'imageId' which is the S3 object key
-#         image_id = urllib.parse.unquote_plus(event['s3_key']) # Use unquoted key as ID
-#         timestamp = int(time.time())
-
-#         item_to_store = {
-#             'imageId': image_id, # Primary Key
-#             's3_bucket': event.get('s3_bucket'),
-#             's3_key_original': event.get('s3_key'), # Store the potentially quoted key if needed
-#             'image_type': event.get('image_type'),
-#             'validation_status': event.get('validation_status'),
-#             'thumbnails': event.get('thumbnails', {}), # Dictionary of thumbnail URLs
-#             'thumbnail_generation_status': event.get('thumbnail_generation_status'),
-#             'extracted_metadata': event.get('extracted_metadata', {}),
-#             'metadata_extraction_status': event.get('metadata_extraction_status'),
-#             'overall_processing_status': 'COMPLETED', # Or set based on logic
-#             'created_at': timestamp,
-#             'updated_at': timestamp
-#         }
-        
-#         # DynamoDB does not like float types, convert them to Decimal.
-#         # A more robust way is to ensure your metadata dict is properly formatted.
-#         # This is a common pattern for cleaning up data before DynamoDB storage.
-#         item_cleaned = json.loads(json.dumps(item_to_store), parse_float=decimal.Decimal)
-
-#         print(f"Attempting to store item in DynamoDB: {json.dumps(item_cleaned, cls=DecimalEncoder)}")
-        
-#         table.put_item(Item=item_cleaned)
-        
-#         print(f"Successfully stored metadata for imageId: {image_id} in table {DYNAMODB_TABLE_NAME}")
-
-#         # This function's output might be the final output of the Step Function
-#         # or just a confirmation.
-#         return {
-#             'message': 'Data stored successfully in DynamoDB',
-#             'imageId': image_id,
-#             'dynamodb_table': DYNAMODB_TABLE_NAME
-#         }
-
-#     except Exception as e:
-#         print(f"Error storing data to DynamoDB: {str(e)}")
-#         # Log the problematic event data for easier debugging
-#         print(f"Problematic event data: {json.dumps(event)}")
-#         raise
-
 # Example Test Event:
 # {
-#   "s3_bucket": "your-original-image-uploads-bucket",
+#   "s3_bucket": "image-uploads-bucket",
 #   "s3_key": "test-image.jpg",
 #   "image_type": ".jpg",
 #   "validation_status": "SUCCESS",

@@ -6,7 +6,7 @@ Description: SAM Template for the Event-Driven Image-Processing Pipeline This
 
 Resources:
   UploadsBucket:
-    Type: AWS::S3::Bucket #This tells CloudFormation to create s3 Bucket. 
+    Type: AWS::S3::Bucket  
     Properties:
       BucketName: image-uploads-bucket-us-east-1-2025
       PublicAccessBlockConfiguration:

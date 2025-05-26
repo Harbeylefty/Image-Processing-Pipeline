@@ -8,7 +8,7 @@ import urllib.parse
 
 s3_client = boto3.client('s3')
 
-# Get thumbnail sizes from environment variable, default if not set
+# Get thumbnail sizes from environment variable or use this as default if not set
 # Format: "width1xheight1,width2xheight2" (e.g., "100x100,640x480")
 THUMBNAIL_SIZES_STR = os.environ.get('THUMBNAIL_SIZES', '128x128,256x256')
 THUMBNAIL_SIZES = []
@@ -22,9 +22,7 @@ for size_pair in THUMBNAIL_SIZES_STR.split(','):
 
 THUMBNAILS_S3_BUCKET = os.environ.get('THUMBNAILS_S3_BUCKET')
 if not THUMBNAILS_S3_BUCKET:
-    # This should ideally not happen if configured correctly
     print("Error: THUMBNAILS_S3_BUCKET environment variable not set!")
-    # You might want to raise an error or use a default, but raising is safer
 
 def lambda_handler(event, context):
     print(f"Received event: {json.dumps(event)}")
@@ -91,8 +89,8 @@ def lambda_handler(event, context):
 
 # Example Test Event:
 # {
-#   "s3_bucket": "your-original-image-uploads-bucket",
-#   "s3_key": "test-image.jpg",
+#   "s3_bucket": "image-uploads-bucket",
+#   "s3_key": "image.jpg",
 #   "image_type": ".jpg",
 #   "validation_status": "SUCCESS"
 # }

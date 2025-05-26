@@ -3,16 +3,13 @@ import json
 import os
 import urllib.parse
 
-# Define supported image types (you can expand this list)
+# Supported image types (you can expand this list)
 SUPPORTED_IMAGE_TYPES = ['.jpg', '.jpeg', '.png']
 
 def lambda_handler(event, context):
     print(f"Received event: {json.dumps(event)}")
 
     try:
-        # --- 1. Extract S3 Bucket and Key from the Event (Corrected Parsing) ---
-        # This parsing directly matches the structure received from S3 via EventBridge/StepFunctions
-        # (as observed in your input from turn 94).
         bucket_name = None
         object_key = None
 
@@ -33,11 +30,11 @@ def lambda_handler(event, context):
         
         print(f"Validating image: s3://{bucket_name}/{object_key}")
 
-        # --- 2. Simple validation based on file extension (This part remains the same) ---
+        # Simple validation based on file extension
         _, file_extension = os.path.splitext(object_key.lower())
 
         if file_extension in SUPPORTED_IMAGE_TYPES:
-            print(f"Image type '{file_extension}' is supported.") # Updated log message slightly
+            print(f"Image type '{file_extension}' is supported.")
             # Prepare output for the next Step Functions state
             output = {
                 's3_bucket': bucket_name,
@@ -59,44 +56,23 @@ def lambda_handler(event, context):
         # Re-raise the exception so Step Functions can handle it as a failure
         raise
 
-# --- Example Test Event for the AWS Lambda Console ---
-# This test event NOW matches the structure your Lambda is likely receiving 
-# end-to-end from S3 via EventBridge (the 'detail' part of an EventBridge event).
-#
+# Example Test Event for the AWS Lambda Console
 # Test Event 1: Simulating the actual input for a valid image
 # {
-#   "version": "0",
 #   "bucket": {
-#     "name": "your-original-image-uploads-bucket" ## REPLACE with your actual bucket name
+#     "name": "image-uploads-bucket"
 #   },
 #   "object": {
-#     "key": "uploads/test-image.jpg", ## REPLACE with a test key, in 'uploads/'
-#     "size": 12345,
-#     "etag": "some-etag",
-#     "sequencer": "some-sequencer" 
-#     // You can add other fields from your actual event from turn 94 if needed for completeness,
-#     // but 'bucket.name' and 'object.key' are the essential ones for this Lambda.
-#   },
-#   "request-id": "EXAMPLE_REQUEST_ID", // These fields below are illustrative
-#   "requester": "EXAMPLE_REQUESTER",
-#   "source-ip-address": "127.0.0.1",
-#   "reason": "PutObject"
+#     "key": "uploads/test-image.jpg"
+#   }
 # }
 
 # Test Event 2: Simulating an unsupported file type (using the actual input structure)
 # {
-#   "version": "0",
 #   "bucket": {
-#     "name": "your-original-image-uploads-bucket" ## REPLACE
+#     "name": "image-uploads-bucket"
 #   },
 #   "object": {
-#     "key": "uploads/document.pdf", ## REPLACE
-#     "size": 6789,
-#     "etag": "another-etag",
-#     "sequencer": "another-sequencer"
-#   },
-#   "request-id": "EXAMPLE_REQUEST_ID_2",
-#   "requester": "EXAMPLE_REQUESTER_2",
-#   "source-ip-address": "127.0.0.1",
-#   "reason": "PutObject"
+#     "key": "uploads/test-image.pdf"
+#   }
 # }

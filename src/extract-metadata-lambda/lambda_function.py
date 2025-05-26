@@ -39,7 +39,7 @@ def lambda_handler(event, context):
         }
         print(f"Basic metadata extracted: {metadata}")
 
-        # --- Advanced Metadata using Rekognition (Optional) ---
+        # Advanced Metadata using Rekognition 
         if USE_REKOGNITION and rekognition_client:
             try:
                 print("Attempting Rekognition label detection...")
@@ -67,8 +67,8 @@ def lambda_handler(event, context):
 
 # Example Test Event:
 # {
-#   "s3_bucket": "your-original-image-uploads-bucket",
-#   "s3_key": "test-image.jpg",
+#   "s3_bucket": "image-uploads-bucket",
+#   "s3_key": "image.jpg",
 #   "image_type": ".jpg",
 #   "validation_status": "SUCCESS",
 #   "thumbnails": {
