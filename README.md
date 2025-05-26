@@ -169,7 +169,7 @@ For subsequent deployments after making changes to your template or Lambda code,
     * **404 Not Found:** If the image ID (derived from `uploads/filename`) is not found in DynamoDB, with a body like `{"message": "Image details not found for the given image identifier."}`.
 
 ## Cleaning Up / Deleting the Stack
-To remove all AWS resources created by this SAM application and avoid ongoing charges:
+To remove all AWS resources created by this SAM application 
 1.  **Empty S3 Buckets:** Manually delete all objects from the `UploadsBucket` and `ThumbNailsBucket` that were created by this stack. CloudFormation cannot delete buckets that contain objects.
 2.  **Delete the SAM/CloudFormation Stack:**
     Navigate to your `infrastructure/sam/` directory in the terminal and run:
