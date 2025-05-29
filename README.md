@@ -21,7 +21,7 @@ This project serves as a practical example of building robust, automated, and sc
 * **Persistent Metadata Storage:** Stores original image references, thumbnail S3 locations, and all extracted metadata in an Amazon DynamoDB table.
 * **Notifications:** Uses Amazon SNS to send human-readable notifications (to an email address) upon successful completion or failure of the processing workflow, using a single topic with message attributes to differentiate status.
 * **API for Status Check:** An HTTP API endpoint built with Amazon API Gateway allows querying the processing status and metadata of any image by its filename.
-* **Infrastructure as Code (IaC):** The entire cloud infrastructure is defined in an AWS SAM template (`template.yml`)
+* **Infrastructure as Code (IaC):** The entire cloud infrastructure is defined in an AWS SAM template (`template.yaml`)
 
 ## Architecture
 
@@ -72,7 +72,7 @@ image-processing-pipeline/
 │   └── architecture.png  
 ├── infrastructure/
 │   ├── sam/
-│   │   ├── template.yml     
+│   │   ├── template.yaml     
 │   │   └── samconfig.toml    
 │   └── stepfunctions/
 │       └── workflow.asl.json 
@@ -134,7 +134,7 @@ To deploy and run this project, you will need:
     * Accept defaults for other prompts
 
 5.  **SNS Email Subscription Confirmation:**
-    After the stack is successfully deployed, an email will be sent from AWS Notifications to the address specified in `template.yml` for the SNS subscription. **You MUST click the confirmation link in this email** to activate the subscription and start receiving notifications from the `ImageProcessingNotifications` topic.
+    After the stack is successfully deployed, an email will be sent from AWS Notifications to the address specified in `template.yaml` for the SNS subscription. **You MUST click the confirmation link in this email** to activate the subscription and start receiving notifications from the `ImageProcessingNotifications` topic.
 
 For subsequent deployments after making changes to your template or Lambda code, you can often just run `sam deploy`
 

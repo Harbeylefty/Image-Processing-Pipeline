@@ -7,7 +7,7 @@ __pycache__/
 *.egg-info/
 *.egg
 
-# --- Virtual Environments ---
+# Virtual Environment
 # Common virtual environment folder names
 .venv/
 venv/
@@ -15,18 +15,13 @@ ENV/
 env/
 */.env # For local environment variable files (if you use them)
 
-# --- Python Packages Installed Locally for Lambda Zipping ---
-# If you use "pip install -t ." to install packages directly into your Lambda source folders
-# for zipping, you generally don't want to commit these library folders themselves.
-# Add specific library folder names that appear after "pip install -t ."
-# Example for Pillow:
+
 PIL/
 Pillow/
 Pillow.libs/
-# Add others if they appear, e.g., for other libraries if you don't use layers for them.
-# The requirements.txt file *should* be committed.
 
-# --- Build artifacts and Distribution Folders ---
+
+# Build artifacts and Distribution Folders
 build/
 dist/
 downloads/
@@ -67,7 +62,7 @@ $RECYCLE.BIN/
 # KDE KCrash
 .drkonqi-coredump.gz
 
-# --- IDEs and Editors ---
+# IDEs and Editors
 # VS Code
 .vscode/*
 !.vscode/settings.json
@@ -93,23 +88,8 @@ $RECYCLE.BIN/
 # Some prefer to commit it for consistent deployments, others ignore it.
 # samconfig.toml 
 
-# --- Terraform (if you were using it - commented out as you chose SAM) ---
-# .terraform/
-# *.tfstate
-# *.tfstate.*.backup
-# crash.log
-# *.tfvars
-# override.tf
-# override.tf.json
-# *_override.tf
-# *_override.tf.json
-# .terraformrc
-# terraform.rc
 
-# --- Other ---
-# Local secrets or configuration files (if any, create your own)
-# local_settings.py
-# .env # Handled by */.env above, but explicit if at root
+
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
